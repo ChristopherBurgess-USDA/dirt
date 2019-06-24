@@ -1,0 +1,12 @@
+*/data/
+*/plots/
+*.html
+*.docx
+*.pdf
+*.rds
+*.tiff
+
+.Rproj.user
+.RData
+.Rhistory
+dirt.Rproj

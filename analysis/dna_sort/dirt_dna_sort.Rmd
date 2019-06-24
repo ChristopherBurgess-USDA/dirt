@@ -1,0 +1,94 @@
+---
+title: "DIRT_dna_sort"
+author: "Chris Burgess"
+date: "October 30, 2017"
+output: word_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries to include
+```{r, warning=F, message = FALSE}
+
+library(tidyverse)
+library(readxl)
+library(knitr)
+```
+
+## Data Importing
+```{r}
+plate1 <- read_excel("../DIRT/DNA_quantification_R_format.xlsx",
+                     sheet = "Plate1")
+
+plate2 <- read_excel("../DIRT/DNA_quantification_R_format.xlsx",
+                     sheet = "Plate2")
+
+# Looking at the first few rows of the preprocessed Data
+head(plate1)
+```
+
+
+## Data format and Sorting
+```{r, warning = F, message = F}
+# Making a data.frame with both plates
+# Mutate creates a new column Here what I am doing is changing
+# the Sample column from the plate2 dataframe into a factor
+# which is a data type in R like characters, integers and float/decimals
+plates <- plate2 %>% mutate(Sample = as.factor(Sample), plate = 2) %>%
+# Union adds rows from both dataframes, just liek in group therory
+# arrange function reorders the rows to first location than sample
+  dplyr::union((plate1 %>% mutate(plate = 1))) %>% group_by(Location, Sample) %>%
+  mutate(v120 = round(120/Conc, 2)) %>%
+  mutate(vAmount = case_when(v120 > 95 ~ "redo",
+                             v120 <= 95 ~ "good")) %>%
+  mutate(Well = factor(Well, levels = plate1$Well)) %>%
+  filter(!Sample %in% c("BAD", 18, 9, NA))
+
+```
+> I have frequently used %>% in my coding.  What this function does it takes the output from function on the left and gives it to the function on the right as its first argument.  If you did not use the "pipe" function the same code would look like this below.
+
+plates <- arrange(union(mutate(plate2, Sample = as.factor(Sample)), plate1), Location, Sample)
+
+> This is the nested way to write what is above.  the pipe function helps with readability.
+
+### Need to set a min amount of DNA cutoff
+
+## Number of redos
+
+```{r}
+platesPost <- plates %>% summarise(dnaSum = sum(Conc*95)) %>%
+  mutate(dnaTotal = case_when(dnaSum < 500 ~ "redo",
+                            dnaSum >= 500 ~ "good")) %>%
+  right_join(plates) %>% arrange(Location, Sample, dnaTotal,v120) %>%
+  select(plate, Well, Location, Sample, Rep,vAmount, dnaTotal, Conc, v120) %>%
+  arrange(plate, Well)
+write_excel_csv(platesPost, "../DIRT/DIRT_DNA_quantification_sorted.csv")
+
+
+
+```
+
+Here I create a new file called DIRT_DNA_quantification_sorted.csv.  It has 4 new columns they are:
+
+* **v250** is the volume required to get 250ng of DNA (250/concentrations)
+* **vAmount** is just letting me know if that **v250** is above or below 95ul (total volume of the well).  There is theoretically 99ul in each well; however, 95 to be safe.
+* **dnaSum** is the ng of DNA in each well.  Concentration * 95ul.
+* **dnaTotal** if we have enough dna in a plot (>1000ng) then this is good; otherwise it will say "redo".  This lets us know that even if certain samples may have low amounts of DNA the plot total will have enough DNA.
+
+```{r}
+platesPost %>% filter(dnaTotal %in% "redo") %>%
+  arrange(Sample,v250) %>%
+  select(Sample, Rep, Conc,v250,vAmount, dnaSum) %>%
+  kable()
+```
+
+
+```{r}
+# Concentration range should be tween 10 to 1000 ng/ul
+# 500 ng DNA per tube
+# 120 ng per sample for dilution
+
+platesPost %>% filter(dnaTotal %in% "redo") %>%
+  arrange(Sample,v250) %>%
+  select(Sample, Rep, Conc,v250,vAmount, dnaSum)
