@@ -9,6 +9,7 @@
 *.png
 *.out
 *.xlsx
+*.json
 .Rproj.user
 .RData
 .Rhistory
