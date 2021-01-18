@@ -1,0 +1,9 @@
+# TO Run: SGE_Batch -c "bash assembly_dirt_2.sh" -r std_assembly_dirt_2 -P 20 -M burgesch@oregonstate.edu
+megahit --12 ../filtered/DL-17-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DL-17-A; mv ../assembled/DL-17-A/final.contigs.fa ../assembled/DL-17-A_contigs.fa
+megahit --12 ../filtered/DL-17-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DL-17-B; mv ../assembled/DL-17-B/final.contigs.fa ../assembled/DL-17-B_contigs.fa
+megahit --12 ../filtered/DW-05-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DW-05-A; mv ../assembled/DW-05-A/final.contigs.fa ../assembled/DW-05-A_contigs.fa
+megahit --12 ../filtered/DW-05-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DW-05-B; mv ../assembled/DW-05-B/final.contigs.fa ../assembled/DW-05-B_contigs.fa
+megahit --12 ../filtered/DW-10-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DW-10-A; mv ../assembled/DW-10-A/final.contigs.fa ../assembled/DW-10-A_contigs.fa
+megahit --12 ../filtered/DW-10-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DW-10-B; mv ../assembled/DW-10-B/final.contigs.fa ../assembled/DW-10-B_contigs.fa
+megahit --12 ../filtered/DW-16-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DW-16-A; mv ../assembled/DW-16-A/final.contigs.fa ../assembled/DW-16-A_contigs.fa
+megahit --12 ../filtered/DW-16-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/DW-16-B; mv ../assembled/DW-16-B/final.contigs.fa ../assembled/DW-16-B_contigs.fa

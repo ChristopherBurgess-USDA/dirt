@@ -1,0 +1,8 @@
+# TO Run: SGE_Batch -c "bash assembly_dirt_3.sh" -r std_assembly_dirt_3 -P 20 -M burgesch@oregonstate.edu
+megahit --12 ../filtered/NI-19-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NI-19-A; mv ../assembled/NI-19-A/final.contigs.fa ../assembled/NI-19-A_contigs.fa
+megahit --12 ../filtered/NI-19-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NI-19-B; mv ../assembled/NI-19-B/final.contigs.fa ../assembled/NI-19-B_contigs.fa
+megahit --12 ../filtered/NI-49-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NI-49-A; mv ../assembled/NI-49-A/final.contigs.fa ../assembled/NI-49-A_contigs.fa
+megahit --12 ../filtered/NI-69-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NI-69-A; mv ../assembled/NI-69-A/final.contigs.fa ../assembled/NI-69-A_contigs.fa
+megahit --12 ../filtered/NI-69-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NI-69-B; mv ../assembled/NI-69-B/final.contigs.fa ../assembled/NI-69-B_contigs.fa
+megahit --12 ../filtered/NL-03-A_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NL-03-A; mv ../assembled/NL-03-A/final.contigs.fa ../assembled/NL-03-A_contigs.fa
+megahit --12 ../filtered/NL-03-B_filtered.fastq.gz --presets meta-large --min-contig-len 1000 -o ../assembled/NL-03-B; mv ../assembled/NL-03-B/final.contigs.fa ../assembled/NL-03-B_contigs.fa
