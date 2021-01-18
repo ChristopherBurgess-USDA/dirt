@@ -1,5 +1,5 @@
-*/data/
-*/plots/
+/data/*
+/plots/*
 *.html
 *.docx
 *.pdf
