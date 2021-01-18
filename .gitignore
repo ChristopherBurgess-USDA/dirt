@@ -5,7 +5,10 @@
 *.pdf
 *.rds
 *.tiff
-
+*.csv
+*.png
+*.out
+*.xlsx
 .Rproj.user
 .RData
 .Rhistory
