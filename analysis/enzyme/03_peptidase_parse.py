@@ -152,11 +152,12 @@ treatments = ['co_dl', 'dw_ni', 'nl_nr']
 
 pep_data, std_r2 = zip(*(peptidase_parser(i) for i in treatments))
 
-pep_data = pd.concat(pep_data)
+pep_data = pd.concat(pep_data) \
+  .rename(columns = {'sample': 'sample_id'})
 
 std_r2 = pd.concat(std_r2)
 
-pep_data.to_csv("data/enzyme/peptidase_activity.csv", index = True)
+pep_data.to_csv("data/enzyme/peptidase_activity.csv")
 
 # %%
 

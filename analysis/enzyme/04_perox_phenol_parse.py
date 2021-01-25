@@ -70,5 +70,4 @@ complete_data = pd.concat(phenol_list) \
   .rename(columns = {"activity": "phenol_activity"}) \
   .join(perox_data)
 # %%
-complete_data.to_csv("data/enzyme/oxidative_activity.csv", index = True)
-# %%
+complete_data.to_csv("data/enzyme/oxidative_activity.csv", index = True, index_label = "sample_id")

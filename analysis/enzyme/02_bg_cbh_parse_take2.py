@@ -69,11 +69,10 @@ cbh_list = [bg_cbh_parse(data_path + i) for i in cbh_files]
 
 # %%
 bg_data = pd.concat(bg_list) \
-  .rename(columns = {"activity": "bg_activity_take2"})
+  .rename(columns = {"activity": "bg_activity"})
   
 complete_data = pd.concat(cbh_list) \
-  .rename(columns = {"activity": "cbh_activity_take2"}) \
+  .rename(columns = {"activity": "cbh_activity"}) \
   .join(bg_data)
 # %%
-complete_data.to_csv("data/enzyme/bg_cbh_activity_take2.csv", index = True)
-# %%
+complete_data.to_csv("data/enzyme/bg_cbh_activity_take2.csv", index = True, index_label = "sample_id")

@@ -78,7 +78,7 @@ soil_water_data.to_csv("data/soil_mass_for_enzymes.csv", index = True)
 
 
 
-complete_data.to_csv("data/enzyme/bg_cbh_activity.csv", index = True)
+complete_data.to_csv("data/enzyme/bg_cbh_activity.csv", index = True, index_label = "sample_id")
 
 
 # %%
