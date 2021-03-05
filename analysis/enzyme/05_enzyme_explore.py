@@ -38,8 +38,9 @@ data = enzyme_data.get('oxidative')
 
 alt.Chart(data).mark_point().encode(
   x = "treatment",
-  y = 'phenol_activity'
-)
+  y = 'phenol_activity',
+  tooltip = ['sample_id']
+).interactive()
 
 # %%
 
@@ -62,8 +63,9 @@ alt.Chart(c_hydro).mark_point().encode(
 alt.Chart(c_hydro).mark_point().encode(
   x = "treatment",
   y = 'cbh_activity',
-  color = 'take'
-)
+  color = 'take',
+  tooltip = ['sample_id']
+).interactive()
 # %%
 c_keep = [
   'treatment',
@@ -82,17 +84,23 @@ n_enzyme = enzyme_data.get('pep') \
     activity_48h = ('activity_48h', np.mean)
   ) \
   .reset_index() \
+  .assign(
+    activity_24h = lambda x: x['activity_24h'] - x['activity_0h'],
+    activity_48h = lambda x: x['activity_48h'] - x['activity_0h']
+  ) \
+  .drop(columns = ['activity_0h']) \
   .pipe(
     pd.melt,
     id_vars = ['treatment', 'plot', "sample_id"],
-    value_vars = ['activity_0h', 'activity_24h', 'activity_48h']
+    value_vars = ['activity_24h', 'activity_48h']
   )
 
 alt.Chart(n_enzyme).mark_point().encode(
   x = "treatment",
   y = 'value:Q',
-  column = 'variable:N'
-)
+  column = 'variable:N',
+  tooltip = ['sample_id']
+).interactive()
 # %%
 
 # %%
