@@ -57,8 +57,9 @@ del temp, temp_2
 alt.Chart(c_hydro).mark_point().encode(
   x = "treatment",
   y = 'bg_activity',
-  color = 'take'
-)
+  color = 'take',
+  tooltip = ['sample_id']
+).interactive()
 
 alt.Chart(c_hydro).mark_point().encode(
   x = "treatment",
