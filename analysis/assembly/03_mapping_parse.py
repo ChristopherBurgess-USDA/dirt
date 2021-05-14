@@ -51,7 +51,34 @@ def parse_spades(file_name):
         temp = file_lines[line_num].strip().split(r" ")[-2:]
         temp[1] = temp[1][1:-2]
         spades_map.extend([float(i) for i in temp])
-    keys = ["spades_total_reads", "spades_reads_map", "spades_percent_reads_map"]
+
+    file_path = "raw/" + file_name + "/QC_and_Genome_Assembly/_reads_removed.txt"
+    with open(file_path, "rt") as open_file:
+        file_lines = open_file.readlines()
+        pattern = re.compile("Short Read Discards:")
+        line_num = 0
+        for line in file_lines:
+            line_num += 1
+            line = line.strip()
+            if pattern.search(line) != None:
+                temp = [i.strip() for i in line.split("\t")][1]
+                temp2 = temp.split(r" ")[::2]
+                temp2[1] = temp2[1][1:-2]
+                spades_map.extend([float(i) for i in temp2])
+                break
+        temp = [i.strip() for i in file_lines[line_num].split("\t")][1]
+        temp2 = temp.split(r" ")[::2]
+        temp2[1] = temp2[1][1:-2]
+        spades_map.extend([float(i) for i in temp2])
+    keys = [
+        "spades_total_reads",
+        "spades_reads_map",
+        "spades_percent_reads_map",
+        "spades_reads_removed_1kbp",
+        "spades_reads_removed_percent_1kbp",
+        "spades_reads_kept_1kbp",
+        "spades_reads_kept_percent_1kbp",
+    ]
     return dict(zip(keys, spades_map))
 
 
@@ -66,7 +93,7 @@ def parse_megahit(file_name):
         dict: A dict of mapped values, keys are column names, values are float
     """
     megahit_map = []
-    file_path = "mapped/" + file_name + "_output.txt"
+    file_path = "mapped/" + file_name + "_megahit_output.txt"
     with open(file_path, "rt") as open_file:
         file_lines = open_file.readlines()
         pattern = re.compile("Reads Used:")
@@ -93,6 +120,44 @@ def parse_megahit(file_name):
     return dict(zip(keys, megahit_map))
 
 
+def parse_spades_1kbp(file_name):
+    """
+    This function reads in assembly mapping results pruned metaspades contigs of >1kbp. Specifically, it pulls out "reads used" and "reads map" information.
+
+    Args:
+        file_name (string): Name of the sample
+
+    Returns:
+        dict: A dict of mapped values, keys are column names, values are float
+    """
+    spades_map = []
+    file_path = "mapped/" + file_name + "_metaspades_output.txt"
+    with open(file_path, "rt") as open_file:
+        file_lines = open_file.readlines()
+        pattern = re.compile("Reads Used:")
+        for line in file_lines:
+            line = line.strip()
+            if pattern.search(line) != None:
+                temp = [i.strip() for i in line.split("\t")][1]
+                spades_map.append(float(temp))
+
+        pattern = re.compile("mapped:")
+        for line in file_lines:
+            line = line.strip()
+            if pattern.search(line) != None:
+                temp = [i.strip() for i in line.split("\t")][1:3]
+                temp[0] = temp[0][:-1]
+                spades_map.extend([float(i) for i in temp])
+    keys = [
+        "spades_1kpb_total_reads",
+        "spades_1kpb_percent_read1_map",
+        "spades_1kpb_read1_map",
+        "spades_1kpb_precent_read2_map",
+        "spades_1kpb_read2_map",
+    ]
+    return dict(zip(keys, spades_map))
+
+
 def mapped_compare(sample_id):
     """
     This function reads in both JGI and megahit pipline and complies them together into one object.
@@ -104,8 +169,9 @@ def mapped_compare(sample_id):
         dict: A dictionary with both spades and megahit mapping information.
     """
     spades_map = parse_spades(sample_id)
+    spades_1kbp_map = parse_spades_1kbp(sample_id)
     megahit_map = parse_megahit(sample_id)
-    return {**spades_map, **megahit_map}
+    return {**spades_map, **spades_1kbp_map, **megahit_map}
 
 
 ## Calls mapping compare and creates a nested dict through dict comprehension. It then pass the nested dict to pandas which parses the outer dict as rows and the inner as columns using the orient = "index" option
