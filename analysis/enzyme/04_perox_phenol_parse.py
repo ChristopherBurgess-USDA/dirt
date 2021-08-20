@@ -25,8 +25,6 @@ soil_water_data = (
 )
 
 # %%
-
-
 def oxidative_parse(file_path):
     """
     This function reads in the absorbance values for a given plate and calculates activity.
@@ -71,14 +69,17 @@ perox_list = [oxidative_parse(data_path + i) for i in perox_files]
 phenol_list = [oxidative_parse(data_path + i) for i in phenol_files]
 
 # %%
-perox_data = pd.concat(perox_list).rename(columns={"activity": "perox_activity"})
+perox_data = pd.concat(perox_list).rename(columns={"activity": "raw_perox_activity"})
 
 complete_data = (
     pd.concat(phenol_list)
     .rename(columns={"activity": "phenol_activity"})
-    .join(perox_data)
+    .join(perox_data).
+    assign(perox_activity = lambda x: x['raw_perox_activity'] - x['phenol_activity'])
 )
 # %%
 complete_data.to_csv(
     "data/enzyme/oxidative_activity.csv", index=True, index_label="sample_id"
 )
+
+# %%
