@@ -1,5 +1,4 @@
 # %% setup
-
 """This script parses the raw bg and cbh data into activity"""
 
 import pandas as pd
@@ -44,7 +43,6 @@ genefam_data = (
 genefam_data[["treatment", "site", "depth"]] = genefam_data.sample_id.str.split(
     "-", expand=True
 )
-
 
 # %%
 
