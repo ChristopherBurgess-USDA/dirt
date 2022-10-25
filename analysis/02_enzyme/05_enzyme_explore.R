@@ -10,6 +10,13 @@ library(scales)
 library(rlang)
 library(gt)
 
+t_levels = c("Double Wood", "Double Litter", "Control", "No Litter", "No Root", "No Input")
+
+color_pal = setNames(
+  c("#7570B3", "#E7298A", "#1B9E77", "#D95F02", "#A6761D", "#666666"),
+  t_levels
+)
+
 ### Added in Carbon and N percent, I honestly don't think there is any difference between treatments with the enzyme data... 
 ## Might need to think about this some more but the model suggest that the creation of maom is not due to a lack of enzyme potential.
 
@@ -37,7 +44,9 @@ enzyme_hash = hashmap(
 ## ************************************************************************* ##
 
 
-carbon_data = read_csv("data/dirt_master_meta_data.csv")
+carbon_data = read_csv("data/master/dirt_master_meta_data.csv") %>%
+  # select(sample_id, treatment, plfa_ug_per_gsoil) %>%
+  mutate(treatment = factor(treatment, levels = t_levels), maom = HF_mgCg + IF_mgCg)
 
 raw_enzyme = read_csv("data/enzyme/enzyme_data_processed.csv") %>%
   select(sample_id, contains("activity")) %>%
@@ -48,10 +57,26 @@ raw_enzyme = read_csv("data/enzyme/enzyme_data_processed.csv") %>%
 enzyme_activity = raw_enzyme %>%
   mutate(
     across(contains("activity"), ~(.x/plfa_ug_per_gsoil), .names = "{.col}_mb"),
-    across(contains("mb"), scale, .names = "{.col}_std"),
-    across(ends_with("activity"), ~(.x/bulk_mgCg), .names = "{.col}_soc"),
-    across(contains("soc"), scale, .names = "{.col}_std")
-    ) %>%
+    across(contains("mb"), ~scale(.x), .names = "{.col}_std"),
+    across(contains("_std"), as.double)
+  ) %>%
+  rename_with(~str_replace(.x, "_activity", ""), contains("activity")) %>%
+  mutate(
+    hydro_mb_std = cbh_mb_std + bg_mb_std,
+    oxi_mb_std = phenol_mb_std + perox_mb_std,
+    c_mb_std = hydro_mb_std + oxi_mb_std,
+    cn_mb_std = c_mb_std/pep_mb_std,
+    total_mb_std = c_mb_std + pep_mb_std
+  )
+
+write_csv(enzyme_activity, "data/master/enzyme_data_normalized.csv")
+
+enzyme_activity = raw_enzyme %>%
+  mutate(
+    across(contains("activity"), ~(.x/plfa_ug_per_gsoil), .names = "{.col}_mb"),
+    across(contains("activity"), ~scale(.x), .names = "{.col}_std"),
+    across(contains("_std"), as.double)
+  ) %>%
   rename_with(~str_replace(.x, "_activity", ""), contains("activity")) %>%
   mutate(
     hydro_mb_std = cbh_mb_std + bg_mb_std,
@@ -59,11 +84,11 @@ enzyme_activity = raw_enzyme %>%
     c_mb_std = hydro_mb_std + oxi_mb_std,
     cn_mb_std = c_mb_std/pep_mb_std,
     total_mb_std = c_mb_std + pep_mb_std,
-    hydro_soc_std = cbh_soc_std + bg_soc_std,
-    oxi_soc_std = phenol_soc_std + perox_soc_std,
-    c_soc_std = hydro_soc_std + oxi_soc_std,
-    cn_soc_std = c_soc_std/pep_soc_std,
-    total_soc_std = c_soc_std + pep_soc_std
+    hydro_std = cbh_std + bg_std,
+    oxi_std = phenol_std + perox_std,
+    c_std = hydro_std + oxi_std,
+    cn_std = c_std/pep_std,
+    total_std = c_std + pep_std
   )
 
 enzyme_activity_meta = enzyme_activity %>%
@@ -77,6 +102,69 @@ enzyme_activity_meta = enzyme_activity %>%
 ## ************************************************************************* ##
 ##                   Enzyme activity Treatment                               ##
 ## ************************************************************************* ##
+
+enzyme_activity %>%
+  ggplot(aes(x = treatment, y = c_std, color = treatment)) +
+  geom_point(size = 5) +
+  theme_bw(16) +
+  theme(
+    legend.position="bottom",
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) +
+  scale_color_manual(values = color_pal) +
+  labs(y = "Carbon Enzyme Activity (g soil)", x = NULL, color = NULL)
+
+enzyme_activity %>%
+  ggplot(aes(x = treatment, y = pep_std, color = treatment)) +
+  geom_point(size = 5) +
+  theme_bw(16) +
+  theme(
+    legend.position="bottom",
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) +
+  scale_color_manual(values = color_pal) +
+  labs(y = "Protease Activity (g soil)", x = NULL, color = NULL)
+enzyme_activity %>%
+  ggplot(aes(x = treatment, y = c_mb_std, color = treatment)) +
+  geom_point(size = 5) +
+  theme_bw(16) +
+  theme(
+    legend.position="bottom",
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) +
+  scale_color_manual(values = color_pal) +
+  labs(y = "Carbon Enzyme Activity (Biomass Normalization)", x = NULL, color = NULL)
+
+enzyme_activity %>%
+  ggplot(aes(x = treatment, y = pep_mb_std, color = treatment)) +
+  geom_point(size = 5) +
+  theme_bw(16) +
+  theme(
+    legend.position="bottom",
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) +
+  scale_color_manual(values = color_pal) +
+  labs(y = "Protease Activity (Biomass Normalization)", x = NULL, color = NULL)
+
+
+enzyme_activity %>%
+  # filter(!(treatment %in% c("Double Wood", "Double Litter"))) %>%
+  ggplot(aes(x = maom, y = c_mb_std, color = treatment)) +
+  geom_point(size = 5) +
+  theme_bw(16) +
+  theme(
+    legend.position="bottom",
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) +
+  scale_color_manual(values = color_pal) +
+  labs(y = "Carbon Enzyme Activity (Biomass Normalization)", x = "Mineral Associated C (mgC/gsoil)", color = NULL)
+
+
 enzyme_activity %>%
   select(treatment, sample_id, contains("mb_std")) %>%
   rename_with(~str_replace(.x, "_mb", ""), contains("mb")) %>%
@@ -85,13 +173,15 @@ enzyme_activity %>%
   ) %>%
   mutate(
     measure = enzyme_hash[[measure]],
-    measure = factor(measure, levels = enzyme_ids)
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(treatment, levels = t_levels)
   ) %>%
   group_by(treatment, measure) %>%
   summarise(value_mean = mean(value), value_sd = sd(value)) %>%
   ggplot(aes(x = treatment, y = value_mean, color = treatment)) +
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = value_mean - value_sd, ymax = value_mean + value_sd), width = .4) +
+  scale_color_brewer(palette = "Dark2") +
   theme_cowplot(16) +
   theme(
     axis.title.x = element_blank(),
@@ -111,7 +201,8 @@ enzyme_activity %>%
   ) %>%
   mutate(
     measure = enzyme_hash[[measure]],
-    measure = factor(measure, levels = enzyme_ids)
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(treatment, levels = t_levels)
   ) %>%
   group_by(treatment, measure) %>%
   summarise(value_mean = mean(value), value_sd = sd(value)) %>%
@@ -119,6 +210,7 @@ enzyme_activity %>%
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = value_mean - value_sd, ymax = value_mean + value_sd), width = .4) +
   theme_cowplot(16) +
+  scale_color_brewer(palette = "Dark2") +
   theme(
     axis.title.x = element_blank(),
     axis.text.x = element_blank(),

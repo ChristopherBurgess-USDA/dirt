@@ -11,9 +11,14 @@ pathway_data = read_tsv(paste0(data_path, "humann_pathabundance_rel_unstratified
   rename("pathway" = `# Pathway`) %>%
   rename_with(~str_replace(., "_.+", "")) %>%
   pivot_longer(-pathway, names_to = "sample_id", values_to = "value") %>%
-  pivot_wider(names_from = "pathway", values_from = "value") %>%
   mutate(sample_id = str_to_lower(sample_id)) %>%
+  pivot_wider(names_from = sample_id, values_from = value) %>%
+  separate(pathway, into = c("pathway", "description"), sep = ": ")
   separate(sample_id, into = c("treatment", "site", "depth"), sep = "-", remove = F)
+  
+write_csv(pathway_data, "data/master/humann_pathway_rel.csv")
+
+
 
 
 genefam_data = read_tsv(paste0(data_path, "humann_genefamilies_rel_unstratified.tsv")) %>%

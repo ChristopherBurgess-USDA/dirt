@@ -10,7 +10,7 @@ frac_hash = hashmap(c("LF", "IF", "HF", "bulk"), f_levels)
 
 t_levels = c("Double Wood", "Double Litter", "Control", "No Litter", "No Root", "No Input")
 
-carbon_data = read_csv("data/dirt_master_meta_data.csv") %>%
+carbon_data = read_csv("data/master/dirt_master_meta_data.csv") %>%
   filter(depth == "0-10") %>%
   mutate(treatment = factor(treatment, levels = t_levels))
 
@@ -32,7 +32,7 @@ parse_data = function(in_data) {
 }
 make_plot = function(in_data, y_lab){
   ggplot(data = in_data, aes(x = treatment, y = mean, color = treatment)) +
-    geom_point(size = 3) +
+    geom_point(size = 4) +
     geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
     theme_cowplot(16) +
     panel_border() +
