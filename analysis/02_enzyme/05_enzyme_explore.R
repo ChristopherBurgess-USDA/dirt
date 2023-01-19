@@ -10,12 +10,7 @@ library(scales)
 library(rlang)
 library(gt)
 
-t_levels = c("Double Wood", "Double Litter", "Control", "No Litter", "No Root", "No Input")
-
-color_pal = setNames(
-  c("#7570B3", "#E7298A", "#1B9E77", "#D95F02", "#A6761D", "#666666"),
-  t_levels
-)
+source("bin/project_variables.R")
 
 ### Added in Carbon and N percent, I honestly don't think there is any difference between treatments with the enzyme data... 
 ## Might need to think about this some more but the model suggest that the creation of maom is not due to a lack of enzyme potential.
@@ -69,7 +64,7 @@ enzyme_activity = raw_enzyme %>%
     total_mb_std = c_mb_std + pep_mb_std
   )
 
-write_csv(enzyme_activity, "data/master/enzyme_data_normalized.csv")
+
 
 enzyme_activity = raw_enzyme %>%
   mutate(
@@ -90,6 +85,8 @@ enzyme_activity = raw_enzyme %>%
     cn_std = c_std/pep_std,
     total_std = c_std + pep_std
   )
+
+write_csv(enzyme_activity, "data/master/enzyme_data_normalized.csv")
 
 enzyme_activity_meta = enzyme_activity %>%
   left_join(carbon_data) %>%
@@ -164,6 +161,33 @@ enzyme_activity %>%
   scale_color_manual(values = color_pal) +
   labs(y = "Carbon Enzyme Activity (Biomass Normalization)", x = "Mineral Associated C (mgC/gsoil)", color = NULL)
 
+
+enzyme_activity %>%
+  select(treatment, sample_id, ends_with("_std") & !contains("_mb")) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  mutate(
+    measure = enzyme_hash[[measure]],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment)
+  ) %>%
+  group_by(treatment, measure) %>%
+  summarise(value_mean = mean(value), value_sd = sd(value)) %>%
+  ggplot(aes(x = treatment, y = value_mean, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = value_mean - value_sd, ymax = value_mean + value_sd), width = .4) +
+  scale_color_manual(values = color_pal) +
+  theme_cowplot(16) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  panel_border() +
+  background_grid() +
+  facet_wrap(~measure, scales = "free_y") +
+  labs(y = "Enzyme activity", color = "Treatment")
 
 enzyme_activity %>%
   select(treatment, sample_id, contains("mb_std")) %>%
