@@ -44,7 +44,7 @@ carbon_data = read_csv("data/master/dirt_master_meta_data.csv") %>%
   mutate(treatment = factor(treatment, levels = t_levels), maom = HF_mgCg + IF_mgCg)
 
 raw_enzyme = read_csv("data/enzyme/enzyme_data_processed.csv") %>%
-  select(sample_id, contains("activity")) %>%
+  select(sample_id, contains("activity"), -raw_perox_activity) %>%
   mutate(sample_id = paste0(sample_id, "-a")) %>%
   left_join(carbon_data)
 
@@ -77,12 +77,10 @@ enzyme_activity = raw_enzyme %>%
     hydro_mb_std = cbh_mb_std + bg_mb_std,
     oxi_mb_std = phenol_mb_std + perox_mb_std,
     c_mb_std = hydro_mb_std + oxi_mb_std,
-    cn_mb_std = c_mb_std/pep_mb_std,
     total_mb_std = c_mb_std + pep_mb_std,
     hydro_std = cbh_std + bg_std,
     oxi_std = phenol_std + perox_std,
     c_std = hydro_std + oxi_std,
-    cn_std = c_std/pep_std,
     total_std = c_std + pep_std
   )
 
@@ -198,14 +196,14 @@ enzyme_activity %>%
   mutate(
     measure = enzyme_hash[[measure]],
     measure = factor(measure, levels = enzyme_ids),
-    treatment = factor(treatment, levels = t_levels)
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment)
   ) %>%
   group_by(treatment, measure) %>%
   summarise(value_mean = mean(value), value_sd = sd(value)) %>%
   ggplot(aes(x = treatment, y = value_mean, color = treatment)) +
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = value_mean - value_sd, ymax = value_mean + value_sd), width = .4) +
-  scale_color_brewer(palette = "Dark2") +
+  scale_color_manual(values = color_pal) +
   theme_cowplot(16) +
   theme(
     axis.title.x = element_blank(),

@@ -23,6 +23,9 @@ maaslin_call = function(meta_path, metagenome_data, output_path){
 
 output_data = str_replace(meta_data, "_data.tsv", "_metacyc")
 
-output_data
-
 pwalk(list(meta_data, metacyc_data, output_data), ~maaslin_call(..1, ..2, ..3))
+
+output_data = str_replace(meta_data, "_data.tsv", "_ko")
+
+pwalk(list(meta_data, ko_data, output_data), ~maaslin_call(..1, ..2, ..3))
+

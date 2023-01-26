@@ -3,7 +3,7 @@ library(cowplot)
 source("bin/project_variables.R")
 
   
-import_data = read_tsv("data/05_surface_compare/continous_data.tsv") %>%
+import_data = read_csv("data/master/enzyme_data_normalized.csv") %>%
   select(treatment, bulk_mgCg, c_mb_std) %>%
   mutate(c_mb_std = scales::rescale(c_mb_std)) %>%
   group_by(treatment) %>%
