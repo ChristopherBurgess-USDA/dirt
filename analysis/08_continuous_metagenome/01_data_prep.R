@@ -11,11 +11,9 @@ carbon_data = read_csv("data/master/dirt_master_meta_data.csv") %>%
   select(sample_id, treatment, plot, depth, bulk_mgCg, maom_mgCg)
 
 enzyme_activity = read_csv("data/master/enzyme_data_normalized.csv") %>%
-  select(sample_id, c_mb_std, pep_mb_std)
+  select(sample_id, bg_mb, cbh_mb, perox_mb, phenol_mb, c_mb_std, pep_mb_std)
 
-resp_data = read_csv("data/raw_data/respiration_yearly_loss.csv") %>%
-  mutate(sd = se*sqrt(3)) %>%
-  select(treatment, resp_mean = gC_total)
+resp_data = read_csv("data/master/summer_daily_resp.csv")
 
 meta_data <- left_join(carbon_data, enzyme_activity) %>%
   left_join(resp_data) %>%

@@ -18,20 +18,17 @@ source("bin/project_variables.R")
 
 enzyme_ids = c(
   "Glucosidase", "Cellulase",
-  "Phenol oxidase", "Peroxidase-raw", "Peroxidase",
+  "Phenol oxidase", "Peroxidase",
   "Protease",
-  "Hydrolytic", "Oxidative",
-  "Carbon Degradation", "C:N Degradation", "Total Enzyme Activity"
+  "Carbon Degradation"
 )
-enzyme_hash = hashmap(
-  c(
-    "bg_std", "cbh_std",
-    "phenol_std", "raw_perox_std", "perox_std",
+enzyme_hash = setNames(
+  enzyme_ids, c(
+    "bg", "cbh",
+    "phenol", "perox",
     "pep_std",
-    "hydro_std", "oxi_std",
-    "c_std", "cn_std", "total_std"
-  ),
-  enzyme_ids
+    "c_std"
+  )
 )
 
 ## ************************************************************************* ##
@@ -94,6 +91,167 @@ enzyme_activity_meta = enzyme_activity %>%
   )
 
 
+###############################################################################
+## ************************************************************************* ##
+##                   Plots                                                   ##
+## ************************************************************************* ##
+###############################################################################
+
+
+## ************************************************************************* ##
+##                   Enzyme activity per g soil                              ##
+## ************************************************************************* ##
+
+enzyme_activity %>%
+  select(treatment, sample_id, bg, cbh, perox, phenol) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  group_by(treatment, measure) %>%
+  summarise(mean_activity = mean(value), sd_activity = sd(value)) %>%
+  ungroup() %>%
+  mutate(
+    measure = enzyme_hash[measure],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment),
+    upr = mean_activity + sd_activity,
+    lwr = mean_activity - sd_activity
+  ) %>%
+  ggplot(aes(x = treatment, y = mean_activity, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), size = 1, width = .2) +
+  scale_color_manual(values = color_pal, guide = "none") +
+  theme_bw(16) +
+  facet_wrap(~measure, scales = "free_y") +
+  labs(x = "Treatment", y = "Enzyme Activity per g soil")
+
+
+enzyme_activity %>%
+  select(treatment, sample_id, pep) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  group_by(treatment, measure) %>%
+  summarise(mean_activity = mean(value), sd_activity = sd(value)) %>%
+  ungroup() %>%
+  mutate(
+    measure = enzyme_hash[measure],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment),
+    upr = mean_activity + sd_activity,
+    lwr = mean_activity - sd_activity
+  ) %>%
+  ggplot(aes(x = treatment, y = mean_activity, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), size = 1, width = .2) +
+  scale_color_manual(values = color_pal, guide = "none") +
+  theme_bw(16) +
+  # facet_wrap(~measure, scales = "free_y") +
+  labs(x = "Treatment", y = "Protease Activity per g soil")
+
+enzyme_activity %>%
+  select(treatment, sample_id, c_std) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  group_by(treatment, measure) %>%
+  summarise(mean_activity = mean(value), sd_activity = sd(value)) %>%
+  ungroup() %>%
+  mutate(
+    measure = enzyme_hash[measure],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment),
+    upr = mean_activity + sd_activity,
+    lwr = mean_activity - sd_activity
+  ) %>%
+  ggplot(aes(x = treatment, y = mean_activity, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), size = 1, width = .2) +
+  scale_color_manual(values = color_pal, guide = "none") +
+  theme_bw(16) +
+  labs(x = "Treatment", y = "Carbon Enzyme Activity per g soil")
+
+## ************************************************************************* ##
+##                   Enzyme activity per biomass                             ##
+## ************************************************************************* ##
+
+enzyme_activity %>%
+  select(treatment, sample_id, bg_mb, cbh_mb, perox_mb, phenol_mb) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  mutate(measure = str_remove(measure, "_mb")) %>%
+  group_by(treatment, measure) %>%
+  summarise(mean_activity = mean(value), sd_activity = sd(value)) %>%
+  ungroup() %>%
+  mutate(
+    measure = enzyme_hash[measure],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment),
+    upr = mean_activity + sd_activity,
+    lwr = mean_activity - sd_activity
+  ) %>%
+  ggplot(aes(x = treatment, y = mean_activity, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), size = 1, width = .2) +
+  scale_color_manual(values = color_pal, guide = "none") +
+  theme_bw(16) +
+  facet_wrap(~measure, scales = "free_y") +
+  labs(x = "Treatment", y = "Enzyme Activity per Biomass")
+
+
+enzyme_activity %>%
+  select(treatment, sample_id, pep_mb) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  mutate(measure = str_remove(measure, "_mb")) %>%
+  group_by(treatment, measure) %>%
+  summarise(mean_activity = mean(value), sd_activity = sd(value)) %>%
+  ungroup() %>%
+  mutate(
+    measure = enzyme_hash[measure],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment),
+    upr = mean_activity + sd_activity,
+    lwr = mean_activity - sd_activity
+  ) %>%
+  ggplot(aes(x = treatment, y = mean_activity, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), size = 1, width = .2) +
+  scale_color_manual(values = color_pal, guide = "none") +
+  theme_bw(16) +
+  # facet_wrap(~measure, scales = "free_y") +
+  labs(x = "Treatment", y = "Protease Activity per Biomass")
+
+enzyme_activity %>%
+  select(treatment, sample_id, c_mb_std) %>%
+  pivot_longer(
+    -c("treatment", "sample_id"), names_to = "measure", values_to = "value"
+  ) %>%
+  mutate(measure = str_remove(measure, "_mb")) %>%
+  group_by(treatment, measure) %>%
+  summarise(mean_activity = mean(value), sd_activity = sd(value)) %>%
+  ungroup() %>%
+  mutate(
+    measure = enzyme_hash[measure],
+    measure = factor(measure, levels = enzyme_ids),
+    treatment = factor(gg_treat_hash[treatment], levels = gg_treatment),
+    upr = mean_activity + sd_activity,
+    lwr = mean_activity - sd_activity
+  ) %>%
+  ggplot(aes(x = treatment, y = mean_activity, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), size = 1, width = .2) +
+  scale_color_manual(values = color_pal, guide = "none") +
+  theme_bw(16) +
+  labs(x = "Treatment", y = "Carbon Enzyme Activity per Biomass")
+
+###############################################################################
+## ************************************************************************* ##
+##                   Old                                                     ##
+## ************************************************************************* ##
+###############################################################################
 ## ************************************************************************* ##
 ##                   Enzyme activity Treatment                               ##
 ## ************************************************************************* ##

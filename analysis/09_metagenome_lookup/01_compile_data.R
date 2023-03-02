@@ -13,7 +13,10 @@ import_data = tibble(
 
 
 
-import_data %>% select(type, feature) %>%
+import_data %>%
+  arrange(qval) %>%
+  mutate(feature = str_replace(feature, "\\.", "-")) %>%
+  select(type, feature) %>%
   distinct() %>%
   write_csv("data/raw_data/sig_metagenome_hits.csv")
 

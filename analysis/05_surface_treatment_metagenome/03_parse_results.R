@@ -27,7 +27,7 @@ ko_results <- tibble(
   unnest(data)
 
 bind_rows(metacyc_results, ko_results) %>%
-  select(-data_path) %>%
+  select(-data_path, -data) %>%
   write_csv(paste0(data_path, "maaslin_results.csv"))
 
 
